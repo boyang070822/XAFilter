@@ -270,6 +270,7 @@ public class XARowKeyFilter extends FilterBase {
             LOG.info("Read event " + event);
             events.add(event);
         }
+        this.events=events;
         this.validEventSet = new HashSet<String>(events);
 
         size = in.readInt();

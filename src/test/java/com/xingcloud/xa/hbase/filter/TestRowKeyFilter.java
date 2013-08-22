@@ -1,5 +1,6 @@
 package com.xingcloud.xa.hbase.filter;
 
+import com.xingcloud.xa.mongodb.MongoDBOperation;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -19,7 +20,24 @@ public class TestRowKeyFilter {
     public void createRowKeyFilter() throws IOException {
         List<String> days=new ArrayList<String>();
         days.add("20130801");
-        XARowKeyFilter filter=new XARowKeyFilter("age_deu","pay.*",days);
+        XARowKeyFilter filter=new XARowKeyFilter("sof-dsk_deu","visit.*.heartbeat",days);
+        /*
+        Thread[] threads=new Thread[500];
+        for(int i=0;i<threads.length;i++){
+            threads[i]=new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        MongoDBOperation.getEventSet("age_deu","pay.*");
+                    } catch (IOException e) {
+                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                    }
+                }
+            });
+            threads[i].start();
+            threads[i].run();
+        }
+        */
         System.out.println("create filter succuess");
     }
 }

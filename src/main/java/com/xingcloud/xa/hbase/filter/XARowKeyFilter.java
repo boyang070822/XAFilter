@@ -63,8 +63,11 @@ public class XARowKeyFilter extends FilterBase {
         Object[] eventArr=events.toArray();
         Arrays.sort(eventArr);
         List<String> eventList=new ArrayList<String>();
-        for(int i=0;i<eventArr.length;i++)
+        for(int i=0;i<eventArr.length;i++){
             eventList.add((String)eventArr[i]);
+            System.out.println(eventArr[i]);
+        }
+
         this.events=eventList;
         this.validEventSet=events;
         this.dates=dates;
@@ -77,6 +80,21 @@ public class XARowKeyFilter extends FilterBase {
         }
         this.startUidOfBytes5=sru;
         this.endUidOfBytes5=enu;
+    }
+
+    public XARowKeyFilter(List<String> events,List<String>  dates){
+        byte[] sru=new byte[5];
+        byte[] enu=new byte[5];
+        for(int i=0;i<5;i++){
+            sru[i]=0;
+            enu[i]=-1;
+        }
+        this.startUidOfBytes5=sru;
+        this.endUidOfBytes5=enu;
+        this.events = events;
+        this.validEventSet = new HashSet<String>(events);
+        this.dates = dates;
+        this.validDateSet = new HashSet<String>(this.dates);
     }
 
     public XARowKeyFilter(long startUid, long endUid, List<String> events, List<String> dates) {

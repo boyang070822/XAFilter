@@ -42,11 +42,13 @@ public class MongoDBOperation {
             }
         }
 
-        DBCollection collection = MongoResourceManager.getInstance().getEventListColl();
+        DBCollection collection = MongoDBManager.getInstance().getEventListDBCollection();
         DBObject queryObj = new BasicDBObject(condition.size());
         if (condition != null && !condition.isEmpty()) {
             queryObj.putAll(condition);
         }
+
+        System.out.println("queryObj "+queryObj);
 
         DBCursor cursor = collection.find(queryObj).limit(50000);
 

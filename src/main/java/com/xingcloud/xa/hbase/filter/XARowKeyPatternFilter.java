@@ -36,7 +36,7 @@ public class XARowKeyPatternFilter extends FilterBase {
 
     public XARowKeyPatternFilter(List<String> partterns){
         super();
-        this.patternBytes=new ArrayList<>();
+        this.patternBytes=new ArrayList<byte[]>();
         this.patterns=partterns;
         for(String pattern: partterns){
             byte[] patternOfBytes= ByteUtils.toBytesBinary(pattern);
@@ -113,7 +113,7 @@ public class XARowKeyPatternFilter extends FilterBase {
             patterns.add(pattern);
         }
         this.patterns=patterns;
-        this.patternBytes=new ArrayList<>();
+        this.patternBytes=new ArrayList<byte[]>();
         for(String pattern: patterns){
             byte[] patternOfBytes= ByteUtils.toBytesBinary(pattern);
             patternBytes.add(patternOfBytes);

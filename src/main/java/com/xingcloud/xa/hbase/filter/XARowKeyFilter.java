@@ -83,18 +83,7 @@ public class XARowKeyFilter extends FilterBase {
     }
 
     public XARowKeyFilter(List<String> events,List<String>  dates){
-        byte[] sru=new byte[5];
-        byte[] enu=new byte[5];
-        for(int i=0;i<5;i++){
-            sru[i]=0;
-            enu[i]=-1;
-        }
-        this.startUidOfBytes5=sru;
-        this.endUidOfBytes5=enu;
-        this.events = events;
-        this.validEventSet = new HashSet<String>(events);
-        this.dates = dates;
-        this.validDateSet = new HashSet<String>(this.dates);
+        this(Long.MIN_VALUE,Long.MAX_VALUE,events,dates);
     }
 
     public XARowKeyFilter(long startUid, long endUid, List<String> events, List<String> dates) {

@@ -91,6 +91,7 @@ public class XARowKeyPatternFilter extends FilterBase {
             }
             if(bigPattern){
                 KeyValue newKV = new KeyValue(pattern, kv.getFamily(), kv.getQualifier());
+                LOG.info(newKV.getKeyString());
                 return KeyValue.createFirstOnRow(newKV.getBuffer(), newKV.getRowOffset(), newKV
                         .getRowLength(), newKV.getBuffer(), newKV.getFamilyOffset(), newKV
                         .getFamilyLength(), null, 0, 0);
@@ -98,6 +99,7 @@ public class XARowKeyPatternFilter extends FilterBase {
             patternIndex++;
         }
         KeyValue newKV=new KeyValue(increaseFirstByte(this.patternBytes.get(patternIndex-1)),kv.getFamily(),kv.getQualifier());
+        LOG.info(newKV.getKeyString());
         return KeyValue.createFirstOnRow(newKV.getBuffer(), newKV.getRowOffset(), newKV
                     .getRowLength(), newKV.getBuffer(), newKV.getFamilyOffset(), newKV
                     .getFamilyLength(), null, 0, 0);

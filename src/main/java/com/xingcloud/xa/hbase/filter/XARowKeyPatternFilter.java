@@ -97,8 +97,20 @@ public class XARowKeyPatternFilter extends FilterBase {
             }
             patternIndex++;
         }
-        return kv;
+        KeyValue newKV=new KeyValue(increaseFirstByte(this.patternBytes.get(patternIndex-1)),kv.getFamily(),kv.getQualifier());
+        return KeyValue.createFirstOnRow(newKV.getBuffer(), newKV.getRowOffset(), newKV
+                    .getRowLength(), newKV.getBuffer(), newKV.getFamilyOffset(), newKV
+                    .getFamilyLength(), null, 0, 0);
 
+    }
+
+    byte[] increaseFirstByte(byte[] orig){
+        byte[] result=new byte[orig.length];
+        result[0]=(byte)(orig[0]+1);
+        for(int i=1;i<orig.length;i++){
+            result[i]=orig[i];
+        }
+        return result;
     }
 
     @Override

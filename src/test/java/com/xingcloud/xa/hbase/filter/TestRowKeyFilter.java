@@ -1,6 +1,7 @@
 package com.xingcloud.xa.hbase.filter;
 
 import com.xingcloud.xa.mongodb.MongoDBOperation;
+import org.apache.hadoop.hbase.util.Bytes;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -20,7 +21,12 @@ public class TestRowKeyFilter {
     public void createRowKeyFilter() throws IOException {
         List<String> days=new ArrayList<String>();
         days.add("20130801");
-        XARowKeyFilter filter=new XARowKeyFilter("sof-dsk_deu","visit.*.heartbeat",days);
+        //XARowKeyFilter filter=new XARowKeyFilter("sof-dsk_deu","visit.*.heartbeat",days);
+        String pattern1="20130101visit.budit.";
+        String pattern2="20130101visit.click.";
+        byte[] p1= Bytes.toBytes(pattern1);
+        byte[] p2= Bytes.toBytes(pattern2);
+        System.out.println("p1 greater than p2 "+Bytes.compareTo(p1,p2));
         /*
         Thread[] threads=new Thread[500];
         for(int i=0;i<threads.length;i++){

@@ -82,6 +82,9 @@ public class XARowKeyPatternFilter extends FilterBase {
             byte[] pattern=this.patternBytes.get(patternIndex);
             byte[] rkPart=Arrays.copyOf(rk,pattern.length);
             boolean bigPattern=false;
+            if(Bytes.compareTo(pattern,rkPart)>0)
+                bigPattern=true;
+                    /*
             for(int i=0;i<pattern.length;i++){
                 if(pattern[i]>rkPart[i])
                 {
@@ -89,6 +92,7 @@ public class XARowKeyPatternFilter extends FilterBase {
                     break;
                 }
             }
+            */
             if(bigPattern){
                 KeyValue newKV = new KeyValue(pattern, kv.getFamily(), kv.getQualifier());
                 LOG.info("pattern "+Bytes.toString(pattern));

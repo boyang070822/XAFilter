@@ -1,0 +1,125 @@
+package com.xingcloud.xa.hbase.filter;
+
+import com.xingcloud.xa.hbase.util.ByteUtils;
+import org.apache.hadoop.hbase.KeyValue;
+import org.apache.hadoop.hbase.filter.Filter;
+import org.apache.hadoop.hbase.filter.FilterBase;
+import org.apache.hadoop.hbase.util.Bytes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.Arrays;
+
+/**
+ * Created with IntelliJ IDEA.
+ * User: yb
+ * Date: 8/28/13
+ * Time: 9:37 AM
+ * To change this template use File | Settings | File Templates.
+ */
+public class XARkConditionFilter extends FilterBase {
+    public  static final Logger logger= LoggerFactory.getLogger(XARkConditionFilter.class);
+
+    private RowKeyRange condition;
+    private Filter filter;
+    public XARkConditionFilter(RowKeyRange condition,Filter filter){
+           this.condition=condition;
+           this.filter=filter;
+    }
+    public XARkConditionFilter(String srk,String enk,Filter filter){
+        this.condition=new RowKeyRange(srk,enk);
+        this.filter=filter;
+    }
+    public XARkConditionFilter(byte[] srk,byte[] enk,Filter filter){
+        this.condition=new RowKeyRange(srk,enk);
+        this.filter=filter;
+    }
+
+
+    @Override
+    public void reset() {
+        filter.reset();
+    }
+
+    @Override
+    public boolean filterRowKey(byte[] buffer, int offset, int length) {
+         byte[] rk= Arrays.copyOfRange(buffer,offset,length);
+         if(condition.inRange(rk)!=0){
+             logger.info("condition not hit. filterRowKey Return false.");
+             return false;
+         }
+         logger.info("condition hit. filterRowKey apply filter.");
+         boolean result=filter.filterRowKey(buffer,offset,length);
+         logger.info("filter(filterRowKey) result "+result);
+         return result;
+    }
+
+    @Override
+    public ReturnCode filterKeyValue(KeyValue kv) {
+        byte[] rk=kv.getRow();
+        if(condition.inRange(rk)!=0){
+            logger.info("filterKeyValue: condition not hit");
+            logger.info("return ReturnCode.INCLUDE");
+            return ReturnCode.INCLUDE;
+        }
+        logger.info("condition hit. filterKeyValue apply filter");
+        ReturnCode result=filter.filterKeyValue(kv);
+        logger.info("filter(filterKeyValue) result "+result);
+        return result;
+    }
+
+    @Override
+    public KeyValue getNextKeyHint(KeyValue kv) {
+        logger.info("getNextKeyHint ");
+        KeyValue result=filter.getNextKeyHint(kv);
+        logger.info("getNextKeyHint "+result);
+        return result;
+    }
+
+    @Override
+    public void write(DataOutput out) throws IOException {
+        //out.writeInt(condition.getStartRk().length);
+        Bytes.writeByteArray(out,condition.getStartRk());
+        //out.writeInt(condition.getEndRk().length);
+        Bytes.writeByteArray(out,condition.getEndRk());
+        filter.write(out);
+    }
+
+    @Override
+    public void readFields(DataInput in) throws IOException {
+        byte[] srk=Bytes.readByteArray(in);
+        byte[] enk=Bytes.readByteArray(in);
+        this.condition=new RowKeyRange(srk,enk);
+        this.filter.readFields(in);
+    }
+
+    public static class RowKeyRange {
+        private byte[] startRk;
+        private byte[] endRk;
+        public RowKeyRange(String startRowKey,String endRowKey){
+            this.startRk= ByteUtils.toBytesBinary(startRowKey);
+            this.endRk= ByteUtils.toBytesBinary(endRowKey);
+        }
+        public RowKeyRange(byte[] srk,byte[] enk){
+            this.startRk=srk;
+            this.endRk=enk;
+        }
+        public int inRange(byte[] rk){
+            if(Bytes.compareTo(rk, startRk)<0)
+                return -1;
+            else if(Bytes.compareTo(rk,endRk)>0)
+                return 1;
+            else
+                return 0;
+        }
+        public byte[] getStartRk(){
+            return startRk;
+        }
+        public byte[] getEndRk(){
+            return endRk;
+        }
+    }
+}

@@ -94,10 +94,15 @@ public class XARkConditionFilter extends FilterBase {
 
     @Override
     public void readFields(DataInput in) throws IOException {
+        logger.info("read srk");
         byte[] srk=Bytes.readByteArray(in);
+        logger.info("read srk "+ByteUtils.toStringBinary(srk));
+        logger.info("read enk");
         byte[] enk=Bytes.readByteArray(in);
+        logger.info("read en "+ByteUtils.toStringBinary(enk));
         this.condition=new RowKeyRange(srk,enk);
         String filterClassName=ByteUtils.toStringBinary(Bytes.readByteArray(in));
+        logger.info("filterClassName "+filterClassName);
         try {
             Class filterClass=Class.forName(filterClassName);
             try {

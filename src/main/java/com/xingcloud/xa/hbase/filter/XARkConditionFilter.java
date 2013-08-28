@@ -25,6 +25,9 @@ public class XARkConditionFilter extends FilterBase {
 
     private RowKeyRange condition;
     private Filter filter;
+    public XARkConditionFilter(){
+        super();
+    }
     public XARkConditionFilter(RowKeyRange condition,Filter filter){
            this.condition=condition;
            this.filter=filter;
@@ -85,6 +88,7 @@ public class XARkConditionFilter extends FilterBase {
         Bytes.writeByteArray(out,condition.getStartRk());
         //out.writeInt(condition.getEndRk().length);
         Bytes.writeByteArray(out,condition.getEndRk());
+        Bytes.writeByteArray(out, ByteUtils.toBytesBinary(filter.getClass().getName()));
         filter.write(out);
     }
 
@@ -93,7 +97,21 @@ public class XARkConditionFilter extends FilterBase {
         byte[] srk=Bytes.readByteArray(in);
         byte[] enk=Bytes.readByteArray(in);
         this.condition=new RowKeyRange(srk,enk);
-        this.filter.readFields(in);
+        String filterClassName=ByteUtils.toStringBinary(Bytes.readByteArray(in));
+        try {
+            Class filterClass=Class.forName(filterClassName);
+            try {
+                this.filter=(Filter)filterClass.newInstance();
+                this.filter.readFields(in);
+            } catch (InstantiationException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+
     }
 
     public static class RowKeyRange {

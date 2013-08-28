@@ -49,7 +49,7 @@ public class XARkConditionFilter extends FilterBase {
 
     @Override
     public boolean filterRowKey(byte[] buffer, int offset, int length) {
-         byte[] rk= Arrays.copyOfRange(buffer,offset,length);
+         byte[] rk= Arrays.copyOfRange(buffer,offset,offset+length);
          if(condition.inRange(rk)!=0){
              logger.info("condition not hit. filterRowKey Return false.");
              return false;
@@ -88,7 +88,10 @@ public class XARkConditionFilter extends FilterBase {
         Bytes.writeByteArray(out,condition.getStartRk());
         //out.writeInt(condition.getEndRk().length);
         Bytes.writeByteArray(out,condition.getEndRk());
-        Bytes.writeByteArray(out, ByteUtils.toBytesBinary(filter.getClass().getName()));
+        String typeName=filter.getClass().getName();
+        logger.info("typeName "+typeName);
+        System.out.println("typeName "+typeName);
+        Bytes.writeByteArray(out, ByteUtils.toBytesBinary(typeName));
         filter.write(out);
     }
 
@@ -99,9 +102,11 @@ public class XARkConditionFilter extends FilterBase {
         logger.info("read srk "+ByteUtils.toStringBinary(srk));
         logger.info("read enk");
         byte[] enk=Bytes.readByteArray(in);
-        logger.info("read en "+ByteUtils.toStringBinary(enk));
+        logger.info("read enk "+ByteUtils.toStringBinary(enk));
         this.condition=new RowKeyRange(srk,enk);
-        String filterClassName=ByteUtils.toStringBinary(Bytes.readByteArray(in));
+        logger.info("read type name ");
+        byte[] typeBytes=Bytes.readByteArray(in);
+        String filterClassName=ByteUtils.toStringBinary(typeBytes);
         logger.info("filterClassName "+filterClassName);
         try {
             Class filterClass=Class.forName(filterClassName);

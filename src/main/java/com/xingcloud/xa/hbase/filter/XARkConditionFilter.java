@@ -51,12 +51,12 @@ public class XARkConditionFilter extends FilterBase {
     public boolean filterRowKey(byte[] buffer, int offset, int length) {
          byte[] rk= Arrays.copyOfRange(buffer,offset,offset+length);
          if(condition.inRange(rk)!=0){
-             logger.info("condition not hit. filterRowKey Return false.");
+             //logger.info("condition not hit. filterRowKey Return false.");
              return false;
          }
-         logger.info("condition hit. filterRowKey apply filter.");
+         //logger.info("condition hit. filterRowKey apply filter.");
          boolean result=filter.filterRowKey(buffer,offset,length);
-         logger.info("filter(filterRowKey) result "+result);
+         //logger.info("filter(filterRowKey) result "+result);
          return result;
     }
 
@@ -64,21 +64,21 @@ public class XARkConditionFilter extends FilterBase {
     public ReturnCode filterKeyValue(KeyValue kv) {
         byte[] rk=kv.getRow();
         if(condition.inRange(rk)!=0){
-            logger.info("filterKeyValue: condition not hit");
-            logger.info("return ReturnCode.INCLUDE");
+            //logger.info("filterKeyValue: condition not hit");
+            //logger.info("return ReturnCode.INCLUDE");
             return ReturnCode.INCLUDE;
         }
-        logger.info("condition hit. filterKeyValue apply filter");
+        //logger.info("condition hit. filterKeyValue apply filter");
         ReturnCode result=filter.filterKeyValue(kv);
-        logger.info("filter(filterKeyValue) result "+result);
+        //logger.info("filter(filterKeyValue) result "+result);
         return result;
     }
 
     @Override
     public KeyValue getNextKeyHint(KeyValue kv) {
-        logger.info("getNextKeyHint ");
+        //logger.info("getNextKeyHint ");
         KeyValue result=filter.getNextKeyHint(kv);
-        logger.info("getNextKeyHint "+result);
+        //logger.info("getNextKeyHint "+result);
         return result;
     }
 

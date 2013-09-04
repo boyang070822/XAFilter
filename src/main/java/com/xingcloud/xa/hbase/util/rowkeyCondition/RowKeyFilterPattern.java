@@ -3,6 +3,8 @@ package com.xingcloud.xa.hbase.util.rowkeyCondition;
 import com.xingcloud.xa.hbase.util.ByteUtils;
 import com.xingcloud.xa.hbase.util.Condition;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -16,6 +18,7 @@ import java.io.IOException;
  * To change this template use File | Settings | File Templates.
  */
 public class  RowKeyFilterPattern implements RowKeyFilterCondition {
+    public static Logger logger= LoggerFactory.getLogger(RowKeyFilterPattern.class);
     private byte[] pattern;
     public RowKeyFilterPattern(){
 
@@ -26,6 +29,7 @@ public class  RowKeyFilterPattern implements RowKeyFilterCondition {
 
     public void readFields(DataInput in) throws IOException {
         pattern=Bytes.readByteArray(in);
+        logger.info("pattern "+Bytes.toStringBinary(pattern));
     }
     public void write(DataOutput out) throws IOException {
         Bytes.writeByteArray(out,Bytes.toBytes(this.getClass().getName()));
@@ -36,6 +40,7 @@ public class  RowKeyFilterPattern implements RowKeyFilterCondition {
     public boolean isAccept(byte[] rk) {
         if(Bytes.startsWith(rk, pattern))
             return true;
+        logger.info("not accept "+Bytes.toStringBinary(rk)+"  "+Bytes.toStringBinary(pattern));
         return false;
     }
     @Override

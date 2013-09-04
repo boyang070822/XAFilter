@@ -2,6 +2,8 @@ package com.xingcloud.xa.hbase.util.rowkeyCondition;
 
 import com.xingcloud.xa.hbase.util.ByteUtils;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -15,6 +17,7 @@ import java.io.IOException;
  * To change this template use File | Settings | File Templates.
  */
 public class RowKeyFilterRange implements RowKeyFilterCondition{
+    public static Logger logger= LoggerFactory.getLogger(RowKeyFilterRange.class);
     private byte[] srk;
     private byte[] enk;
     public RowKeyFilterRange(String srk,String enk){
@@ -25,6 +28,8 @@ public class RowKeyFilterRange implements RowKeyFilterCondition{
     public void readFields(DataInput in) throws IOException {
         srk=Bytes.readByteArray(in);
         enk=Bytes.readByteArray(in);
+        logger.info("srk "+Bytes.toStringBinary(srk));
+        logger.info("enk "+Bytes.toStringBinary(enk));
     }
     public void write(DataOutput out) throws IOException {
         Bytes.writeByteArray(out,Bytes.toBytes(this.getClass().getName()));
@@ -34,6 +39,7 @@ public class RowKeyFilterRange implements RowKeyFilterCondition{
     public boolean isAccept(byte[] rk){
         if(Bytes.compareTo(rk, srk)>=0&&Bytes.compareTo(rk,enk)<0)
             return true;
+        logger.info("not accept "+Bytes.toStringBinary(rk)+"  "+Bytes.toStringBinary(srk)+"---"+Bytes.toStringBinary(enk));
         return false;
     }
 

@@ -30,7 +30,7 @@ public class  RowKeyFilterPattern implements RowKeyFilterCondition {
 
     public void readFields(DataInput in) throws IOException {
         pattern=Bytes.readByteArray(in);
-        logger.info("pattern "+Bytes.toStringBinary(pattern));
+        //logger.info("pattern "+Bytes.toStringBinary(pattern));
     }
     public void write(DataOutput out) throws IOException {
         Bytes.writeByteArray(out,Bytes.toBytes(this.getClass().getName()));
@@ -41,7 +41,7 @@ public class  RowKeyFilterPattern implements RowKeyFilterCondition {
     public int accept(byte[] rk) {
         if(Bytes.startsWith(rk, pattern))
             return 0;
-        logger.info("not accept "+Bytes.toStringBinary(rk)+"  "+Bytes.toStringBinary(pattern));
+        //logger.info("not accept "+Bytes.toStringBinary(rk)+"  "+Bytes.toStringBinary(pattern));
         if(Bytes.compareTo(rk,pattern)<0)
             return -1;
         return 1;

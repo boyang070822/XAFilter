@@ -28,8 +28,8 @@ public class RowKeyFilterRange implements RowKeyFilterCondition{
     public void readFields(DataInput in) throws IOException {
         srk=Bytes.readByteArray(in);
         enk=Bytes.readByteArray(in);
-        logger.info("srk "+Bytes.toStringBinary(srk));
-        logger.info("enk "+Bytes.toStringBinary(enk));
+        //logger.info("srk "+Bytes.toStringBinary(srk));
+        //logger.info("enk "+Bytes.toStringBinary(enk));
     }
     public void write(DataOutput out) throws IOException {
         Bytes.writeByteArray(out,Bytes.toBytes(this.getClass().getName()));
@@ -39,10 +39,10 @@ public class RowKeyFilterRange implements RowKeyFilterCondition{
     public int accept(byte[] rk){
 
         if(Bytes.compareTo(rk, srk)>=0&&Bytes.compareTo(rk,enk)<0){
-            logger.info(Bytes.toStringBinary(rk)+" :"+" "+Bytes.toStringBinary(srk)+", "+Bytes.toStringBinary(enk));
+            //logger.info(Bytes.toStringBinary(rk)+" :"+" "+Bytes.toStringBinary(srk)+", "+Bytes.toStringBinary(enk));
             return 0;
         }
-        logger.info("not accept "+Bytes.toStringBinary(rk)+"  "+Bytes.toStringBinary(srk)+"---"+Bytes.toStringBinary(enk));
+        //logger.info("not accept "+Bytes.toStringBinary(rk)+"  "+Bytes.toStringBinary(srk)+"---"+Bytes.toStringBinary(enk));
         if(Bytes.compareTo(rk,srk)<0)
             return -1;
         return 1;

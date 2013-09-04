@@ -75,7 +75,7 @@ public class XARowKeyPatternFilter extends FilterBase {
             RowKeyFilterCondition condition=this.conditions.get(conditionIndex);
             //byte[] rkPart=Arrays.copyOf(rk,pattern.length);
             boolean aceeptCondition=false;
-            if(condition.accept(rk)>=0)
+            if(condition.accept(rk)<=0)
                 aceeptCondition=true;
             if(aceeptCondition){
                 KeyValue newKV = new KeyValue(condition.getStartRk(), kv.getFamily(), kv.getQualifier());

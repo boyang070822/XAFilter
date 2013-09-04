@@ -861,7 +861,7 @@ public class ByteUtils {
     }
 
     /* increment/deincrement for positive value */
-    private static byte[] binaryIncrementPos(byte[] value, long amount) {
+    public static byte[] binaryIncrementPos(byte[] value, long amount) {
         long amo = amount;
         int sign = 1;
         if (amount < 0) {

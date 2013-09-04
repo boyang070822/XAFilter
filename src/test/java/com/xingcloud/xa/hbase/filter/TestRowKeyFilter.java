@@ -27,23 +27,7 @@ public class TestRowKeyFilter {
         byte[] p1= Bytes.toBytes(pattern1);
         byte[] p2= Bytes.toBytes(pattern2);
         System.out.println("p1 greater than p2 "+Bytes.compareTo(p1,p2));
-        /*
-        Thread[] threads=new Thread[500];
-        for(int i=0;i<threads.length;i++){
-            threads[i]=new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        MongoDBOperation.getEventSet("age_deu","pay.*");
-                    } catch (IOException e) {
-                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                    }
-                }
-            });
-            threads[i].start();
-            threads[i].run();
-        }
-        */
+
         System.out.println("create filter succuess");
     }
 }

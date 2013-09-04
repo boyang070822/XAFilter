@@ -9,6 +9,7 @@ package com.xingcloud.xa.hbase.filter;
 
 import com.xingcloud.xa.hbase.util.ByteUtils;
 import com.xingcloud.xa.hbase.util.HBaseEventUtils;
+import com.xingcloud.xa.hbase.util.rowkeyCondition.RowKeyFilterCondition;
 import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.filter.FilterBase;
 import org.apache.hadoop.hbase.util.Bytes;
@@ -24,25 +25,17 @@ import java.util.*;
 public class XARowKeyPatternFilter extends FilterBase {
     private static Logger LOG = LoggerFactory.getLogger(XARowKeyFilter.class);
 
-    private List<byte[]> patternBytes=null;
-    private List<String> patterns=null;
-    private int patternIndex=0;
+    private List<RowKeyFilterCondition> conditions=null;
+    private int conditionIndex=0;
     private boolean filterOutRow = false;
-    private long warningCounter = 0;
 
     public XARowKeyPatternFilter() {
         super();
     }
 
-    public XARowKeyPatternFilter(List<String> partterns){
+    public XARowKeyPatternFilter(List<RowKeyFilterCondition> conditions){
         super();
-        this.patternBytes=new ArrayList<byte[]>();
-        this.patterns=partterns;
-        for(String pattern: partterns){
-            byte[] patternOfBytes= ByteUtils.toBytesBinary(pattern);
-            patternBytes.add(patternOfBytes);
-        }
-
+        this.conditions=conditions;
     }
 
 
@@ -56,7 +49,7 @@ public class XARowKeyPatternFilter extends FilterBase {
     @Override
     public ReturnCode filterKeyValue(KeyValue kv) {
         if (this.filterOutRow) {
-                if(this.patternIndex==this.patternBytes.size())
+                if(this.conditionIndex==this.conditions.size())
                     return ReturnCode.NEXT_ROW;
                 return ReturnCode.SEEK_NEXT_USING_HINT;
         }
@@ -65,9 +58,9 @@ public class XARowKeyPatternFilter extends FilterBase {
 
     @Override
     public boolean filterRowKey(byte[] data, int offset, int length) {
-        byte[] rowKeyByteArray = Arrays.copyOfRange(data, offset, offset + length);
-        if(patternBytes!=null){
-            if(!Bytes.startsWith(rowKeyByteArray,patternBytes.get(patternIndex)))
+        byte[] rk = Arrays.copyOfRange(data, offset, offset + length);
+        if(conditions!=null){
+            if(!conditions.get(conditionIndex).isAccept(rk))
                 this.filterOutRow=true;
             return this.filterOutRow;
         }
@@ -78,44 +71,35 @@ public class XARowKeyPatternFilter extends FilterBase {
     public KeyValue getNextKeyHint(KeyValue kv) {
         byte[] rk = kv.getRow();
         resetIndex();
-        while(patternIndex<this.patternBytes.size()){
-            byte[] pattern=this.patternBytes.get(patternIndex);
-            byte[] rkPart=Arrays.copyOf(rk,pattern.length);
-            boolean bigPattern=false;
-            if(Bytes.compareTo(pattern,rkPart)>0)
-                bigPattern=true;
-                    /*
-            for(int i=0;i<pattern.length;i++){
-                if(pattern[i]>rkPart[i])
-                {
-                    bigPattern=true;
-                    break;
-                }
-            }
-            */
-            if(bigPattern){
-                KeyValue newKV = new KeyValue(pattern, kv.getFamily(), kv.getQualifier());
-                LOG.info("pattern "+Bytes.toString(pattern));
-                LOG.info("rk "+Bytes.toString(rkPart));
+        while(conditionIndex<this.conditions.size()){
+            RowKeyFilterCondition condition=this.conditions.get(conditionIndex);
+            //byte[] rkPart=Arrays.copyOf(rk,pattern.length);
+            boolean aceeptCondition=false;
+            if(condition.isAccept(rk))
+                aceeptCondition=true;
+            if(aceeptCondition){
+                KeyValue newKV = new KeyValue(condition.getStartRk(), kv.getFamily(), kv.getQualifier());
+                LOG.info("pattern "+Bytes.toString(condition.getStartRk()));
+                LOG.info("rk "+Bytes.toString(rk));
                 LOG.info("bigPattern ");
-                LOG.info("patternIndex "+patternIndex);
+                LOG.info("conditionIndex "+conditionIndex);
                 return KeyValue.createFirstOnRow(newKV.getBuffer(), newKV.getRowOffset(), newKV
                         .getRowLength(), newKV.getBuffer(), newKV.getFamilyOffset(), newKV
                         .getFamilyLength(), null, 0, 0);
             }
-            patternIndex++;
+            conditionIndex++;
         }
-        byte[] result=increaseFirstByte(this.patternBytes.get(patternIndex-1));
+        byte[] result=increaseFirstByte(this.conditions.get(conditionIndex-1).getEndRk());
         KeyValue newKV=new KeyValue(result,kv.getFamily(),kv.getQualifier());
         LOG.info("increase Result "+Bytes.toString(result));
-        LOG.info("patternIndex "+patternIndex);
+        LOG.info("conditionIndex "+conditionIndex);
         return KeyValue.createFirstOnRow(newKV.getBuffer(), newKV.getRowOffset(), newKV
                     .getRowLength(), newKV.getBuffer(), newKV.getFamilyOffset(), newKV
                     .getFamilyLength(), null, 0, 0);
 
     }
 
-    byte[] increaseFirstByte(byte[] orig){
+    public static byte[] increaseFirstByte(byte[] orig){
         byte[] result=new byte[orig.length];
         result[0]=(byte)(orig[0]+1);
         for(int i=1;i<orig.length;i++){
@@ -126,38 +110,39 @@ public class XARowKeyPatternFilter extends FilterBase {
 
     @Override
     public void readFields(DataInput in) throws IOException {
-        LOG.info("Read fields of XARowKeyPatternFilter...");
+        LOG.info("Read fields of XARowKeyConditonFilter...");
         int size = in.readInt();
         LOG.info("Patterns size: " + size);
-        List<String> patterns = new ArrayList<String>(size);
+        List<RowKeyFilterCondition> conditions = new ArrayList<RowKeyFilterCondition>(size);
         for (int i = 0; i < size; i++) {
-            String pattern = new String(Bytes.readByteArray(in));
-            LOG.info("Read pattern " + pattern);
-            patterns.add(pattern);
+            String conditionType = new String(Bytes.readByteArray(in));
+            LOG.info("condition type " + conditionType);
+            try {
+                Class conditionClass=Class.forName(conditionType);
+                RowKeyFilterCondition condition=(RowKeyFilterCondition)conditionClass.newInstance();
+                condition.readFields(in);
+                conditions.add(condition);
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw  new IOException(e);
+            }
         }
-        this.patterns=patterns;
-        this.patternBytes=new ArrayList<byte[]>();
-        for(String pattern: patterns){
-            byte[] patternOfBytes= ByteUtils.toBytesBinary(pattern);
-            patternBytes.add(patternOfBytes);
-        }
+        this.conditions=conditions;
         this.filterOutRow = false;
-        this.patternIndex=0;
+        this.conditionIndex=0;
     }
 
     @Override
     public void write(DataOutput out) throws IOException {
-        out.writeInt(patterns.size());
-        for (String pattern : patterns) {
-            LOG.info("Write pattern: " + pattern);
-            Bytes.writeByteArray(out, Bytes.toBytes(pattern));
+        out.writeInt(conditions.size());
+        for (RowKeyFilterCondition condition : conditions) {
+            LOG.info("Write pattern: " + condition);
+            condition.write(out);
         }
     }
 
-
-
     private void resetIndex() {
-        patternIndex=0;
+        conditionIndex=0;
     }
 }
 

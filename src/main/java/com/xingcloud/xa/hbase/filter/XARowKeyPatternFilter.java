@@ -60,7 +60,7 @@ public class XARowKeyPatternFilter extends FilterBase {
     public boolean filterRowKey(byte[] data, int offset, int length) {
         byte[] rk = Arrays.copyOfRange(data, offset, offset + length);
         if(conditions!=null){
-            if(!conditions.get(conditionIndex).isAccept(rk))
+            if(conditions.get(conditionIndex).accept(rk)!=0)
                 this.filterOutRow=true;
             return this.filterOutRow;
         }
@@ -75,7 +75,7 @@ public class XARowKeyPatternFilter extends FilterBase {
             RowKeyFilterCondition condition=this.conditions.get(conditionIndex);
             //byte[] rkPart=Arrays.copyOf(rk,pattern.length);
             boolean aceeptCondition=false;
-            if(condition.isAccept(rk))
+            if(condition.accept(rk)>=0)
                 aceeptCondition=true;
             if(aceeptCondition){
                 KeyValue newKV = new KeyValue(condition.getStartRk(), kv.getFamily(), kv.getQualifier());

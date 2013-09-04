@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Arrays;
 
 /**
  * Created with IntelliJ IDEA.
@@ -37,11 +38,13 @@ public class  RowKeyFilterPattern implements RowKeyFilterCondition {
     }
 
     @Override
-    public boolean isAccept(byte[] rk) {
+    public int accept(byte[] rk) {
         if(Bytes.startsWith(rk, pattern))
-            return true;
+            return 0;
         logger.info("not accept "+Bytes.toStringBinary(rk)+"  "+Bytes.toStringBinary(pattern));
-        return false;
+        if(Bytes.compareTo(rk,pattern)<0)
+            return -1;
+        return 1;
     }
     @Override
     public byte[] getStartRk() {

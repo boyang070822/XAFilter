@@ -36,11 +36,14 @@ public class RowKeyFilterRange implements RowKeyFilterCondition{
         Bytes.writeByteArray(out,srk);
         Bytes.writeByteArray(out,enk);
     }
-    public boolean isAccept(byte[] rk){
+    public int accept(byte[] rk){
         if(Bytes.compareTo(rk, srk)>=0&&Bytes.compareTo(rk,enk)<0)
-            return true;
+            return 0;
         logger.info("not accept "+Bytes.toStringBinary(rk)+"  "+Bytes.toStringBinary(srk)+"---"+Bytes.toStringBinary(enk));
-        return false;
+        if(Bytes.compareTo(rk,srk)<0)
+            return -1;
+        return 1;
+
     }
 
     @Override

@@ -28,6 +28,17 @@ public class XARowKeyPatternFilter extends FilterBase {
     private List<RowKeyFilterCondition> conditions=null;
     private int conditionIndex=0;
     private boolean filterOutRow = false;
+    private Comparator<RowKeyFilterCondition> conditionComparator=new Comparator<RowKeyFilterCondition>() {
+        @Override
+        public int compare(RowKeyFilterCondition o1, RowKeyFilterCondition o2) {
+            if(Bytes.compareTo(o1.getStartRk(),o2.getStartRk())>0)
+                return 1;
+            else if(Bytes.compareTo(o1.getStartRk(),o2.getStartRk())<0)
+                return -1;
+            else
+                return 0;
+        }
+    };
 
     public XARowKeyPatternFilter() {
         super();
@@ -35,7 +46,14 @@ public class XARowKeyPatternFilter extends FilterBase {
 
     public XARowKeyPatternFilter(List<RowKeyFilterCondition> conditions){
         super();
-        this.conditions=conditions;
+        this.conditions=new ArrayList<>();
+        for(RowKeyFilterCondition condition :conditions){
+            if(!this.conditions.contains(condition))
+                this.conditions.add(condition);
+        }
+        RowKeyFilterCondition[] sortCondition=this.conditions.toArray(new RowKeyFilterCondition[this.conditions.size()]);
+        Arrays.sort(sortCondition,conditionComparator);
+        this.conditions=Arrays.asList(sortCondition);
     }
 
 
@@ -148,5 +166,7 @@ public class XARowKeyPatternFilter extends FilterBase {
     private void resetIndex() {
         conditionIndex=0;
     }
+
+
 }
 

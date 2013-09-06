@@ -18,7 +18,7 @@ import java.util.Arrays;
  * Time: 2:03 PM
  * To change this template use File | Settings | File Templates.
  */
-public class  RowKeyFilterPattern implements RowKeyFilterCondition {
+public class  RowKeyFilterPattern implements RowKeyFilterCondition,Comparable<RowKeyFilterCondition> {
     public static Logger logger= LoggerFactory.getLogger(RowKeyFilterPattern.class);
     private byte[] pattern;
     public RowKeyFilterPattern(){
@@ -35,6 +35,16 @@ public class  RowKeyFilterPattern implements RowKeyFilterCondition {
     public void write(DataOutput out) throws IOException {
         Bytes.writeByteArray(out,Bytes.toBytes(this.getClass().getName()));
         Bytes.writeByteArray(out,pattern);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if(o instanceof RowKeyFilterPattern){
+            RowKeyFilterPattern refPattern=(RowKeyFilterPattern)o;
+            if(Bytes.equals(refPattern.getStartRk(), this.pattern))
+                return true;
+        }
+        return false;
     }
 
     @Override
@@ -57,4 +67,8 @@ public class  RowKeyFilterPattern implements RowKeyFilterCondition {
     }
 
 
+    @Override
+    public int compareTo(RowKeyFilterCondition o) {
+        return Bytes.compareTo(this.getStartRk(),o.getStartRk());
+    }
 }

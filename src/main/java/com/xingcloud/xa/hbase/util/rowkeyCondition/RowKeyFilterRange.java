@@ -16,7 +16,7 @@ import java.io.IOException;
  * Time: 2:02 PM
  * To change this template use File | Settings | File Templates.
  */
-public class RowKeyFilterRange implements RowKeyFilterCondition{
+public class RowKeyFilterRange implements RowKeyFilterCondition, Comparable<RowKeyFilterCondition>{
     public static Logger logger= LoggerFactory.getLogger(RowKeyFilterRange.class);
     private byte[] srk;
     private byte[] enk;
@@ -36,6 +36,17 @@ public class RowKeyFilterRange implements RowKeyFilterCondition{
         Bytes.writeByteArray(out,srk);
         Bytes.writeByteArray(out,enk);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if(o instanceof RowKeyFilterRange){
+            RowKeyFilterRange refRange=(RowKeyFilterRange)o;
+            if(Bytes.equals(refRange.getStartRk(),srk)&& Bytes.equals(refRange.getEndRk(), this.getEndRk()))
+                return true;
+        }
+        return false;
+    }
+
     public int accept(byte[] rk){
 
         if(Bytes.compareTo(rk, srk)>=0&&Bytes.compareTo(rk,enk)<0){
@@ -57,5 +68,10 @@ public class RowKeyFilterRange implements RowKeyFilterCondition{
     @Override
     public byte[] getEndRk() {
         return ByteUtils.binaryIncrementPos(enk,1l);
+    }
+
+    @Override
+    public int compareTo(RowKeyFilterCondition o) {
+        return Bytes.compareTo(this.getStartRk(),o.getStartRk());
     }
 }

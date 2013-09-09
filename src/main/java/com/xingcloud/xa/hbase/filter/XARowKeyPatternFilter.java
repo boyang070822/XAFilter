@@ -81,8 +81,10 @@ public class XARowKeyPatternFilter extends FilterBase {
             if(conditions.get(conditionIndex).accept(rk)!=0){
                 LOG.info("not accept by condition "+conditionIndex);
                 this.filterOutRow=true;
+            }else {
+                this.filterOutRow=false;
+                return this.filterOutRow;
             }
-            return this.filterOutRow;
         }
         return this.filterOutRow;
     }

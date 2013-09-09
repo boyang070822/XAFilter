@@ -46,7 +46,7 @@ public class XARowKeyPatternFilter extends FilterBase {
 
     public XARowKeyPatternFilter(List<RowKeyFilterCondition> conditions){
         super();
-        this.conditions=new ArrayList<>();
+        this.conditions=new ArrayList<RowKeyFilterCondition>();
         for(RowKeyFilterCondition condition :conditions){
             if(!this.conditions.contains(condition))
                 this.conditions.add(condition);

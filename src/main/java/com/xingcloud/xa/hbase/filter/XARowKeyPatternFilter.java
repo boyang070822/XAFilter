@@ -66,9 +66,13 @@ public class XARowKeyPatternFilter extends FilterBase {
 
     @Override
     public ReturnCode filterKeyValue(KeyValue kv) {
+        LOG.info("filterKeyValue");
         if (this.filterOutRow) {
-                if(this.conditionIndex==this.conditions.size())
+                if(this.conditionIndex==this.conditions.size()){
+                    LOG.info("filter KeyValue return NEXT_ROW");
                     return ReturnCode.NEXT_ROW;
+                }
+                LOG.info("filter KeyValue return SEEK_NEXT_USING_HINT");
                 return ReturnCode.SEEK_NEXT_USING_HINT;
         }
         return ReturnCode.INCLUDE;
@@ -77,12 +81,19 @@ public class XARowKeyPatternFilter extends FilterBase {
     @Override
     public boolean filterRowKey(byte[] data, int offset, int length) {
         byte[] rk = Arrays.copyOfRange(data, offset, offset + length);
+        LOG.info("filter RowKey");
         if(conditions!=null){
             if(conditions.get(conditionIndex).accept(rk)!=0){
                 LOG.info("not accept by condition "+conditionIndex);
                 this.filterOutRow=true;
+                LOG.info("filter RowKey return true;");
+                return this.filterOutRow;
+
             }else {
+                LOG.info("accept by condition "+conditionIndex+
+                        " :"+Bytes.toStringBinary(conditions.get(conditionIndex).getStartRk()));
                 this.filterOutRow=false;
+                LOG.info("filter RowKey return false;");
                 return this.filterOutRow;
             }
         }
@@ -91,9 +102,11 @@ public class XARowKeyPatternFilter extends FilterBase {
 
     @Override
     public KeyValue getNextKeyHint(KeyValue kv) {
+        LOG.info("getNextKeyHint ");
         byte[] rk = kv.getRow();
         resetIndex();
         while(conditionIndex<this.conditions.size()){
+            LOG.info("conditionIndex "+conditionIndex);
             RowKeyFilterCondition condition=this.conditions.get(conditionIndex);
             //byte[] rkPart=Arrays.copyOf(rk,pattern.length);
             boolean aceeptCondition=false;

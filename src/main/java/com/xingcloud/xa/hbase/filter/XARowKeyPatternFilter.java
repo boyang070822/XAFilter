@@ -66,7 +66,7 @@ public class XARowKeyPatternFilter extends FilterBase {
 
     @Override
     public ReturnCode filterKeyValue(KeyValue kv) {
-        LOG.info("filterKeyValue");
+        //LOG.info("filterKeyValue");
         if (this.filterOutRow) {
                 if(this.conditionIndex==this.conditions.size()){
                     LOG.info("filter KeyValue return NEXT_ROW");
@@ -81,7 +81,7 @@ public class XARowKeyPatternFilter extends FilterBase {
     @Override
     public boolean filterRowKey(byte[] data, int offset, int length) {
         byte[] rk = Arrays.copyOfRange(data, offset, offset + length);
-        LOG.info("filter RowKey");
+        //LOG.info("filter RowKey");
         if(conditions!=null){
             if(conditions.get(conditionIndex).accept(rk)!=0){
                 LOG.info("not accept by condition "+conditionIndex);
@@ -90,10 +90,10 @@ public class XARowKeyPatternFilter extends FilterBase {
                 return this.filterOutRow;
 
             }else {
-                LOG.info("accept by condition "+conditionIndex+
-                        " :"+Bytes.toStringBinary(conditions.get(conditionIndex).getStartRk()));
+                //LOG.info("accept by condition "+conditionIndex+
+                //        " :"+Bytes.toStringBinary(conditions.get(conditionIndex).getStartRk()));
                 this.filterOutRow=false;
-                LOG.info("filter RowKey return false;");
+                //LOG.info("filter RowKey return false;");
                 return this.filterOutRow;
             }
         }

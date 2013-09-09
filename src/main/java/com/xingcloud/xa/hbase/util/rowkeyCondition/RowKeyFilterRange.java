@@ -53,7 +53,7 @@ public class RowKeyFilterRange implements RowKeyFilterCondition, Comparable<RowK
             //logger.info(Bytes.toStringBinary(rk)+" :"+" "+Bytes.toStringBinary(srk)+", "+Bytes.toStringBinary(enk));
             return 0;
         }
-        //logger.info("not accept "+Bytes.toStringBinary(rk)+"  "+Bytes.toStringBinary(srk)+"---"+Bytes.toStringBinary(enk));
+        logger.info("not accept "+Bytes.toStringBinary(rk)+"  "+Bytes.toStringBinary(srk)+"---"+Bytes.toStringBinary(enk));
         if(Bytes.compareTo(rk,srk)<0)
             return -1;
         return 1;

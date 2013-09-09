@@ -51,7 +51,7 @@ public class  RowKeyFilterPattern implements RowKeyFilterCondition,Comparable<Ro
     public int accept(byte[] rk) {
         if(Bytes.startsWith(rk, pattern))
             return 0;
-        //logger.info("not accept "+Bytes.toStringBinary(rk)+"  "+Bytes.toStringBinary(pattern));
+        logger.info("not accept "+Bytes.toStringBinary(rk)+"  "+Bytes.toStringBinary(pattern));
         if(Bytes.compareTo(rk,pattern)<0)
             return -1;
         return 1;

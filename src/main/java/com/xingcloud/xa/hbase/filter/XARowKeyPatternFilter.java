@@ -97,12 +97,12 @@ public class XARowKeyPatternFilter extends FilterBase {
                 aceeptCondition=true;
             if(aceeptCondition){
                 KeyValue newKV = new KeyValue(condition.getStartRk(), kv.getFamily(), kv.getQualifier());
-                /*
+
                 LOG.info("pattern "+Bytes.toString(condition.getStartRk()));
                 LOG.info("rk "+Bytes.toString(rk));
                 LOG.info("bigPattern ");
                 LOG.info("conditionIndex "+conditionIndex);
-                */
+
                 return KeyValue.createFirstOnRow(newKV.getBuffer(), newKV.getRowOffset(), newKV
                         .getRowLength(), newKV.getBuffer(), newKV.getFamilyOffset(), newKV
                         .getFamilyLength(), null, 0, 0);
@@ -111,10 +111,10 @@ public class XARowKeyPatternFilter extends FilterBase {
         }
         byte[] result=increaseFirstByte(this.conditions.get(conditionIndex-1).getEndRk());
         KeyValue newKV=new KeyValue(result,kv.getFamily(),kv.getQualifier());
-        /*
+
         LOG.info("increase Result "+Bytes.toString(result));
         LOG.info("conditionIndex "+conditionIndex);
-        */
+
         return KeyValue.createFirstOnRow(newKV.getBuffer(), newKV.getRowOffset(), newKV
                     .getRowLength(), newKV.getBuffer(), newKV.getFamilyOffset(), newKV
                     .getFamilyLength(), null, 0, 0);

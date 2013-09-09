@@ -137,17 +137,18 @@ public class XARowKeyPatternFilter extends FilterBase {
 
     @Override
     public void readFields(DataInput in) throws IOException {
-        //LOG.info("Read fields of XARowKeyConditonFilter...");
+        LOG.info("Read fields of XARowKeyConditonFilter...");
         int size = in.readInt();
-        //LOG.info("Patterns size: " + size);
+        LOG.info("Patterns size: " + size);
         List<RowKeyFilterCondition> conditions = new ArrayList<RowKeyFilterCondition>(size);
         for (int i = 0; i < size; i++) {
             String conditionType = new String(Bytes.readByteArray(in));
-            //LOG.info("condition type " + conditionType);
+            LOG.info("condition type " + conditionType);
             try {
                 Class conditionClass=Class.forName(conditionType);
                 RowKeyFilterCondition condition=(RowKeyFilterCondition)conditionClass.newInstance();
                 condition.readFields(in);
+                LOG.info(Bytes.toStringBinary(condition.getStartRk()));
                 conditions.add(condition);
             } catch (Exception e) {
                 e.printStackTrace();

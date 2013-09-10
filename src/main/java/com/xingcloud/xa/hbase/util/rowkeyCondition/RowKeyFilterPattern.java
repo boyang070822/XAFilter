@@ -89,7 +89,7 @@ public class  RowKeyFilterPattern implements RowKeyFilterCondition,Comparable<Ro
     public int rkCompareTo(byte[] rk){
         if(Bytes.startsWith(rk, pattern)){
             byte[] rkHead=Arrays.copyOf(rk,rk.length-tailSrt.length);
-            byte[] nextHead=Bytes.add(Arrays.copyOf(rkHead,rkHead.length-1),new byte[]{(byte)(rkHead[rkHead.length]+1)});
+            byte[] nextHead=Bytes.add(Arrays.copyOf(rkHead,rkHead.length-1),new byte[]{(byte)(rkHead[rkHead.length-1]+1)});
             destination=Bytes.add(nextHead,tailSrt);
             return 0;
         }

@@ -83,7 +83,7 @@ public class XARowKeyPatternFilter extends FilterBase {
         byte[] rk = Arrays.copyOfRange(data, offset, offset + length);
         //LOG.info("filter RowKey");
         if(conditions!=null){
-            if(!conditions.get(conditionIndex).accept(rk)){
+            if(conditionIndex<conditions.size()&&!conditions.get(conditionIndex).accept(rk)){
                 LOG.info("not accept by condition "+conditionIndex);
                 return toNextCondition(rk);
             }else {

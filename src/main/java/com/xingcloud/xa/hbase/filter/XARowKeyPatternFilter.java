@@ -68,6 +68,7 @@ public class XARowKeyPatternFilter extends FilterBase {
     public ReturnCode filterKeyValue(KeyValue kv) {
         //LOG.info("filterKeyValue");
         if (this.filterOutRow) {
+
                 if(this.conditionIndex==this.conditions.size()){
                     LOG.info("filter KeyValue return NEXT_ROW");
                     return ReturnCode.NEXT_ROW;
@@ -82,35 +83,43 @@ public class XARowKeyPatternFilter extends FilterBase {
     public boolean filterRowKey(byte[] data, int offset, int length) {
         byte[] rk = Arrays.copyOfRange(data, offset, offset + length);
         //LOG.info("filter RowKey");
-        if(conditions!=null){
-            if(conditionIndex<conditions.size()&&!conditions.get(conditionIndex).accept(rk)){
+        if(conditions!=null&&conditionIndex<conditions.size()){
+            if(!conditions.get(conditionIndex).accept(rk)){
                 LOG.info("not accept by condition "+conditionIndex);
                 return toNextCondition(rk);
+
             }else {
-                //LOG.info("accept by condition "+conditionIndex+
-                //        " :"+Bytes.toStringBinary(conditions.get(conditionIndex).getStartRk()));
+                LOG.info("accept by condition "+conditionIndex+
+                        " :"+Bytes.toStringBinary(conditions.get(conditionIndex).getStartRk()));
                 this.filterOutRow=false;
-                //LOG.info("filter RowKey return false;");
+                LOG.info("filter RowKey return false;");
                 return this.filterOutRow;
             }
+        }else{
+            this.filterOutRow=true;
+            return this.filterOutRow;
         }
         return this.filterOutRow;
     }
 
     private boolean toNextCondition(byte[] rk){
+       LOG.info("to next Condition");
        while(conditionIndex<conditions.size()){
            if(conditions.get(conditionIndex).rkCompareTo(rk)<=0)
                break;
            conditionIndex++;
        }
+       LOG.info(" to condition "+conditionIndex);
        if(conditionIndex<conditions.size()&&conditions.get(conditionIndex).accept(rk))
        {
            this.filterOutRow=false;
-           //LOG.info("to NextCondition return false");
+           LOG.info("to NextCondition return false");
            return this.filterOutRow;
        }else {
+           if(conditionIndex==conditions.size())
+               conditionIndex--;
            this.filterOutRow=true;
-           //LOG.info("to NextCondition return true");
+           LOG.info("to NextCondition return true");
            return this.filterOutRow;
        }
     }

@@ -103,7 +103,7 @@ public class XARowKeyPatternFilter extends FilterBase {
                break;
            conditionIndex++;
        }
-       if(conditions.get(conditionIndex).accept(rk))
+       if(conditionIndex<conditions.size()&&conditions.get(conditionIndex).accept(rk))
        {
            this.filterOutRow=false;
            //LOG.info("to NextCondition return false");

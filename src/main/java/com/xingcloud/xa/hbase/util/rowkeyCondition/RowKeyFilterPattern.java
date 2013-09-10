@@ -76,12 +76,12 @@ public class  RowKeyFilterPattern implements RowKeyFilterCondition,Comparable<Ro
             byte[] rkTailSrt= Arrays.copyOfRange(rk,rk.length-tailSrt.length,rk.length);
             byte[] rkTailEnd= Arrays.copyOfRange(rk,rk.length-tailEnd.length,rk.length);
             if(Bytes.compareTo(rkTailSrt,tailSrt)>=0&&Bytes.compareTo(rkTailEnd,tailEnd)<0){
-                logger.info("rk: "+Bytes.toStringBinary(rk)+",rkTail: "+
-                        Bytes.toStringBinary(rkTailSrt)+"  accept ");
+                //logger.info("rk: "+Bytes.toStringBinary(rk)+",rkTail: "+
+                //        Bytes.toStringBinary(rkTailSrt)+"  accept ");
                 return true;
             }
         }
-        logger.info("not accept "+Bytes.toStringBinary(rk)+"  "+Bytes.toStringBinary(pattern));
+        //logger.info("not accept "+Bytes.toStringBinary(rk)+"  "+Bytes.toStringBinary(pattern));
         return false;
     }
 
@@ -93,7 +93,7 @@ public class  RowKeyFilterPattern implements RowKeyFilterCondition,Comparable<Ro
             destination=Bytes.add(nextHead,tailSrt);
             return 0;
         }
-        logger.info("not accept "+Bytes.toStringBinary(rk)+"  "+Bytes.toStringBinary(pattern));
+        //logger.info("not accept "+Bytes.toStringBinary(rk)+"  "+Bytes.toStringBinary(pattern));
         if(Bytes.compareTo(rk,pattern)<0)
             return -1;
         return 1;

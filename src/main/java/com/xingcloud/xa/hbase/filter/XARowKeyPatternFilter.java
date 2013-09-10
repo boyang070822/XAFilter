@@ -70,10 +70,10 @@ public class XARowKeyPatternFilter extends FilterBase {
         if (this.filterOutRow) {
 
                 if(this.conditionIndex==this.conditions.size()){
-                    LOG.info("filter KeyValue return NEXT_ROW");
+                    //LOG.info("filter KeyValue return NEXT_ROW");
                     return ReturnCode.NEXT_ROW;
                 }
-                LOG.info("filter KeyValue return SEEK_NEXT_USING_HINT");
+                //LOG.info("filter KeyValue return SEEK_NEXT_USING_HINT");
                 return ReturnCode.SEEK_NEXT_USING_HINT;
         }
         return ReturnCode.INCLUDE;
@@ -85,14 +85,14 @@ public class XARowKeyPatternFilter extends FilterBase {
         //LOG.info("filter RowKey");
         if(conditions!=null&&conditionIndex<conditions.size()){
             if(!conditions.get(conditionIndex).accept(rk)){
-                LOG.info("not accept by condition "+conditionIndex);
+                //LOG.info("not accept by condition "+conditionIndex);
                 return toNextCondition(rk);
 
             }else {
-                LOG.info("accept by condition "+conditionIndex+
-                        " :"+Bytes.toStringBinary(conditions.get(conditionIndex).getStartRk()));
+                //LOG.info("accept by condition "+conditionIndex+
+                //        " :"+Bytes.toStringBinary(conditions.get(conditionIndex).getStartRk()));
                 this.filterOutRow=false;
-                LOG.info("filter RowKey return false;");
+                //LOG.info("filter RowKey return false;");
                 return this.filterOutRow;
             }
         }else{

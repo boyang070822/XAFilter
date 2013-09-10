@@ -12,9 +12,11 @@ import java.io.IOException;
  * To change this template use File | Settings | File Templates.
  */
 public interface RowKeyFilterCondition {
-    public int accept(byte[] rk);
+    public boolean accept(byte[] rk);
     public byte[] getStartRk();
     public byte[] getEndRk();
+    public byte[] getDestination();
+    public int rkCompareTo(byte[] rk);
     public void readFields(DataInput in) throws IOException;
     public void write(DataOutput out) throws IOException;
 }

@@ -83,12 +83,9 @@ public class XARowKeyPatternFilter extends FilterBase {
         byte[] rk = Arrays.copyOfRange(data, offset, offset + length);
         //LOG.info("filter RowKey");
         if(conditions!=null){
-            if(conditions.get(conditionIndex).accept(rk)!=0){
+            if(!conditions.get(conditionIndex).accept(rk)){
                 LOG.info("not accept by condition "+conditionIndex);
-                this.filterOutRow=true;
-                LOG.info("filter RowKey return true;");
-                return this.filterOutRow;
-
+                return toNextCondition(rk);
             }else {
                 //LOG.info("accept by condition "+conditionIndex+
                 //        " :"+Bytes.toStringBinary(conditions.get(conditionIndex).getStartRk()));
@@ -100,20 +97,34 @@ public class XARowKeyPatternFilter extends FilterBase {
         return this.filterOutRow;
     }
 
+    private boolean toNextCondition(byte[] rk){
+       while(conditionIndex<conditions.size()){
+           if(conditions.get(conditionIndex).rkCompareTo(rk)<=0)
+               break;
+           conditionIndex++;
+       }
+       if(conditions.get(conditionIndex).accept(rk))
+       {
+           this.filterOutRow=false;
+           //LOG.info("to NextCondition return false");
+           return this.filterOutRow;
+       }else {
+           this.filterOutRow=true;
+           //LOG.info("to NextCondition return true");
+           return this.filterOutRow;
+       }
+    }
+
     @Override
     public KeyValue getNextKeyHint(KeyValue kv) {
         LOG.info("getNextKeyHint ");
         byte[] rk = kv.getRow();
-        resetIndex();
+        //resetIndex();
         while(conditionIndex<this.conditions.size()){
             LOG.info("conditionIndex "+conditionIndex);
             RowKeyFilterCondition condition=this.conditions.get(conditionIndex);
-            //byte[] rkPart=Arrays.copyOf(rk,pattern.length);
-            boolean aceeptCondition=false;
-            if(condition.accept(rk)<=0)
-                aceeptCondition=true;
-            if(aceeptCondition){
-                KeyValue newKV = new KeyValue(condition.getStartRk(), kv.getFamily(), kv.getQualifier());
+            if(condition.rkCompareTo(rk)<=0){
+                KeyValue newKV = new KeyValue(condition.getDestination(), kv.getFamily(), kv.getQualifier());
                 this.filterOutRow=false;
                 LOG.info("pattern "+Bytes.toString(condition.getStartRk()));
                 LOG.info("rk "+Bytes.toStringBinary(rk));

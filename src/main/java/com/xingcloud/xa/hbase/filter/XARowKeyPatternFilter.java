@@ -99,7 +99,7 @@ public class XARowKeyPatternFilter extends FilterBase {
             this.filterOutRow=true;
             return this.filterOutRow;
         }
-        return this.filterOutRow;
+        //return this.filterOutRow;
     }
 
     private boolean toNextCondition(byte[] rk){

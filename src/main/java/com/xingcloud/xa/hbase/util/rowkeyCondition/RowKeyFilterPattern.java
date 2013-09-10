@@ -46,6 +46,8 @@ public class  RowKeyFilterPattern implements RowKeyFilterCondition,Comparable<Ro
         tailEnd=Bytes.readByteArray(in);
         if((tailSrt.length==1&&tailSrt[0]==(byte)0)&&(tailEnd.length==1&&tailEnd[0]==(byte)-1))
             this.sampling=false;
+        else
+            this.sampling=true;
         this.destination=Bytes.add(this.pattern,this.tailSrt);
         //logger.info("pattern "+Bytes.toStringBinary(pattern));
     }

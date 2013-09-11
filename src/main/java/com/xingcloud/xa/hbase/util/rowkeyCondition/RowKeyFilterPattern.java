@@ -54,6 +54,7 @@ public class  RowKeyFilterPattern implements RowKeyFilterCondition,Comparable<Ro
                 sampling=true;
                 break;
             }
+            i++;
         }
         if(sampling){
             if(Bytes.equals(Arrays.copyOfRange(pattern,pattern.length-2,pattern.length),new byte[]{'.',-1})){

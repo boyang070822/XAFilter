@@ -56,6 +56,7 @@ public class RowKeyFilterRange implements RowKeyFilterCondition, Comparable<RowK
                 sampling=true;
                 break;
             }
+            i++;
         }
         tailLen=tailSrt.length;
         //logger.info("srk "+Bytes.toStringBinary(srk));

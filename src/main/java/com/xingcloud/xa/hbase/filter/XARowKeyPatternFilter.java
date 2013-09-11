@@ -86,7 +86,8 @@ public class XARowKeyPatternFilter extends FilterBase {
         if(conditions!=null&&conditionIndex<conditions.size()){
             if(!conditions.get(conditionIndex).accept(rk)){
                 //LOG.info("not accept by condition "+conditionIndex);
-                return toNextCondition(rk);
+                this.filterOutRow=true;
+                return this.filterOutRow;
 
             }else {
                 //LOG.info("accept by condition "+conditionIndex+
@@ -100,34 +101,6 @@ public class XARowKeyPatternFilter extends FilterBase {
             return this.filterOutRow;
         }
         //return this.filterOutRow;
-    }
-
-    private boolean toNextCondition(byte[] rk){
-       LOG.info("to next Condition");
-       boolean nextCondition=false;
-       while(conditionIndex<conditions.size()){
-           if(conditions.get(conditionIndex).rkCompareTo(rk)<=0)
-               break;
-           conditionIndex++;
-           nextCondition=true;
-       }
-       if(!nextCondition){
-           this.filterOutRow=true;
-           return this.filterOutRow;
-       }
-       LOG.info(" to condition "+conditionIndex);
-       if(conditionIndex<conditions.size()&&conditions.get(conditionIndex).accept(rk))
-       {
-           this.filterOutRow=false;
-           LOG.info("to NextCondition return false");
-           return this.filterOutRow;
-       }else {
-           if(conditionIndex==conditions.size())
-               conditionIndex--;
-           this.filterOutRow=true;
-           LOG.info("to NextCondition return true");
-           return this.filterOutRow;
-       }
     }
 
     @Override

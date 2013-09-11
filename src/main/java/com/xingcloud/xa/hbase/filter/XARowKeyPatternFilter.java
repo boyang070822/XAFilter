@@ -109,7 +109,7 @@ public class XARowKeyPatternFilter extends FilterBase {
         byte[] rk = kv.getRow();
         //resetIndex();
         while(conditionIndex<this.conditions.size()){
-            LOG.info("conditionIndex "+conditionIndex);
+            //LOG.info("conditionIndex "+conditionIndex);
             RowKeyFilterCondition condition=this.conditions.get(conditionIndex);
             if(condition.rkCompareTo(rk)<=0){
                 KeyValue newKV = new KeyValue(condition.getDestination(), kv.getFamily(), kv.getQualifier());
@@ -118,7 +118,7 @@ public class XARowKeyPatternFilter extends FilterBase {
                 //LOG.info("rk "+Bytes.toStringBinary(rk));
                 //LOG.info("bigPattern ");
                 //LOG.info("conditionIndex "+conditionIndex);
-                LOG.info(" skip to "+Bytes.toStringBinary(newKV.getRow()));
+                //LOG.info(" skip to "+Bytes.toStringBinary(newKV.getRow()));
 
 
                 return KeyValue.createFirstOnRow(newKV.getBuffer(), newKV.getRowOffset(), newKV

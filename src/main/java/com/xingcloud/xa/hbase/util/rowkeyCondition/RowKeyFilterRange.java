@@ -25,6 +25,7 @@ public class RowKeyFilterRange implements RowKeyFilterCondition, Comparable<RowK
     private byte[] tailEnd=null;
     private boolean sampling=false;
     private byte[] destination;
+    private int tailLen;
     public RowKeyFilterRange(String srk,String enk){
         this.srk= ByteUtils.toBytesBinary(srk);
         this.enk= ByteUtils.toBytesBinary(enk);
@@ -38,8 +39,7 @@ public class RowKeyFilterRange implements RowKeyFilterCondition, Comparable<RowK
         this.enk=Bytes.toBytesBinary(enk);
         this.tailSrt=Bytes.toBytesBinary(tailStart);
         this.tailEnd=Bytes.toBytesBinary(tailEnd);
-        //if(Bytes.compareTo(Bytes.padTail(this.srk,this.tailSrt.length),this.tailSrt)<0)
-
+        assert (this.tailSrt.length==this.tailEnd.length);
         this.destination=this.srk;
         this.sampling=true;
     }
@@ -50,10 +50,14 @@ public class RowKeyFilterRange implements RowKeyFilterCondition, Comparable<RowK
         tailSrt=Bytes.readByteArray(in);
         tailEnd=Bytes.readByteArray(in);
         this.destination=this.srk;
-        if((tailSrt.length==1&&tailSrt[0]==(byte)0)&&(tailEnd.length==1&&tailEnd[0]==(byte)-1))
-           sampling=false;
-        else
-            sampling=true;
+        int i=0;
+        while(i<tailSrt.length){
+            if(!(tailSrt[i]==(byte)0&&tailEnd[i]==(byte)-1)){
+                sampling=true;
+                break;
+            }
+        }
+        tailLen=tailSrt.length;
         //logger.info("srk "+Bytes.toStringBinary(srk));
         //logger.info("enk "+Bytes.toStringBinary(enk));
     }
@@ -80,9 +84,9 @@ public class RowKeyFilterRange implements RowKeyFilterCondition, Comparable<RowK
         if(Bytes.compareTo(rk, srk)>=0&&Bytes.compareTo(rk,enk)<0){
             if(!sampling)
                 return true;
-            byte[] rkTailSrt= Arrays.copyOfRange(rk,rk.length-tailSrt.length,rk.length);
-            byte[] rkTailEnd= Arrays.copyOfRange(rk,rk.length-tailEnd.length,rk.length);
-            if(Bytes.compareTo(rkTailSrt,tailSrt)>=0&&Bytes.compareTo(rkTailEnd,tailEnd)<0)
+            byte[] rkTail= Arrays.copyOfRange(rk,rk.length-tailLen,rk.length);
+            //byte[] rkTailEnd= Arrays.copyOfRange(rk,rk.length-tailEnd.length,rk.length);
+            if(Bytes.compareTo(rkTail,tailSrt)>=0&&Bytes.compareTo(rkTail,tailEnd)<0)
                 return true;
             //logger.info(Bytes.toStringBinary(rk)+" :"+" "+Bytes.toStringBinary(srk)+", "+Bytes.toStringBinary(enk));
             //return 0;
@@ -93,7 +97,7 @@ public class RowKeyFilterRange implements RowKeyFilterCondition, Comparable<RowK
 
     public int rkCompareTo(byte[] rk){
         if(Bytes.compareTo(rk, srk)>=0&&Bytes.compareTo(rk,enk)<0){
-            byte[] rkHead=Arrays.copyOf(rk,rk.length-tailSrt.length);
+            byte[] rkHead=Arrays.copyOf(rk,rk.length-tailLen);
             byte[] nextHead=Bytes.add(Arrays.copyOf(rkHead,rkHead.length-1),new byte[]{(byte)(rkHead[rkHead.length-1]+1)});
             destination=Bytes.add(nextHead,tailSrt);
             return 0;

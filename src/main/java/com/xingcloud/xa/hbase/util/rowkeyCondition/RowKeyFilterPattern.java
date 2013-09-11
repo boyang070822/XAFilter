@@ -23,7 +23,10 @@ public class  RowKeyFilterPattern implements RowKeyFilterCondition,Comparable<Ro
     private byte[] pattern;
     private byte[] tailSrt;
     private byte[] tailEnd;
-    private boolean sampling;
+    private boolean sampling=false;
+    //private boolean hasCompleteRange=false;
+    private byte[] srk;
+    private byte[] enk;
     private byte[] destination;
     public RowKeyFilterPattern(){
 
@@ -34,22 +37,40 @@ public class  RowKeyFilterPattern implements RowKeyFilterCondition,Comparable<Ro
         this.tailEnd=new byte[]{-1};
     }
 
-    public RowKeyFilterPattern(String pattern,String tailSrt, String tailEnd){
-        this.pattern=Bytes.toBytesBinary(  pattern);
+    public RowKeyFilterPattern(String pattern,String tailSrt, String tailEnd)  {
+        this.pattern=Bytes.toBytesBinary(pattern);
         this.tailSrt=Bytes.toBytesBinary(tailSrt);
         this.tailEnd=Bytes.toBytesBinary(tailEnd);
+        assert (this.tailSrt.length!=this.tailEnd.length);
     }
 
     public void readFields(DataInput in) throws IOException {
         pattern=Bytes.readByteArray(in);
         tailSrt=Bytes.readByteArray(in);
         tailEnd=Bytes.readByteArray(in);
-        if((tailSrt.length==1&&tailSrt[0]==(byte)0)&&(tailEnd.length==1&&tailEnd[0]==(byte)-1))
-            this.sampling=false;
-        else
-            this.sampling=true;
-        this.destination=Bytes.add(this.pattern,this.tailSrt);
-        //logger.info("pattern "+Bytes.toStringBinary(pattern));
+        int i=0;
+        while(i<tailSrt.length){
+            if(!(tailSrt[i]==(byte)0&&tailEnd[i]==(byte)-1)){
+                sampling=true;
+                break;
+            }
+        }
+        if(sampling){
+            if(Bytes.equals(Arrays.copyOfRange(pattern,pattern.length-2,pattern.length),new byte[]{'.',-1})){
+                srk=Bytes.add(pattern,tailSrt);
+                enk=Bytes.add(pattern,tailEnd);
+            }else{
+                srk=Bytes.add(pattern,new byte[]{'.',-1},tailSrt);
+                enk=Bytes.add(pattern,new byte[]{'.',-1},tailEnd);
+            }
+            logger.info("srk "+Bytes.toStringBinary(srk));
+            logger.info("enk "+Bytes.toStringBinary(enk));
+            destination=srk;
+        }else {
+            destination=pattern;
+        }
+        logger.info("pattern "+Bytes.toStringBinary(pattern));
+
     }
     public void write(DataOutput out) throws IOException {
         Bytes.writeByteArray(out,Bytes.toBytes(this.getClass().getName()));
@@ -70,33 +91,34 @@ public class  RowKeyFilterPattern implements RowKeyFilterCondition,Comparable<Ro
 
     @Override
     public boolean accept(byte[] rk) {
-        if(Bytes.startsWith(rk, pattern)){
-            if(!sampling)
+        if(sampling){
+            if(Bytes.compareTo(rk,srk)>=0&&Bytes.compareTo(rk,enk)<0)
                 return true;
-            byte[] rkTailSrt= Arrays.copyOfRange(rk,rk.length-tailSrt.length,rk.length);
-            byte[] rkTailEnd= Arrays.copyOfRange(rk,rk.length-tailEnd.length,rk.length);
-            if(Bytes.compareTo(rkTailSrt,tailSrt)>=0&&Bytes.compareTo(rkTailEnd,tailEnd)<0){
-                //logger.info("rk: "+Bytes.toStringBinary(rk)+",rkTail: "+
-                //        Bytes.toStringBinary(rkTailSrt)+"  accept ");
+            return false;
+        }else {
+            if(Bytes.startsWith(rk,pattern))
                 return true;
-            }
+            return false;
         }
-        //logger.info("not accept "+Bytes.toStringBinary(rk)+"  "+Bytes.toStringBinary(pattern));
-        return false;
     }
 
     @Override
     public int rkCompareTo(byte[] rk){
-        if(Bytes.startsWith(rk, pattern)){
-            byte[] rkHead=Arrays.copyOf(rk,rk.length-tailSrt.length);
-            byte[] nextHead=Bytes.add(Arrays.copyOf(rkHead,rkHead.length-1),new byte[]{(byte)(rkHead[rkHead.length-1]+1)});
-            destination=Bytes.add(nextHead,tailSrt);
-            return 0;
+        if(sampling){
+            if(Bytes.compareTo(rk,srk)>=0&&Bytes.compareTo(rk,enk)<0)
+                return 0;
+            else if(Bytes.compareTo(rk,srk)<0)
+                return -1;
+            else
+                return 1;
+        }else {
+            if(Bytes.startsWith(rk,pattern))
+                return 0;
+            else if(Bytes.compareTo(rk,pattern)<0)
+                return -1;
+            else
+                return 1;
         }
-        //logger.info("not accept "+Bytes.toStringBinary(rk)+"  "+Bytes.toStringBinary(pattern));
-        if(Bytes.compareTo(rk,pattern)<0)
-            return -1;
-        return 1;
     }
     @Override
     public byte[] getStartRk() {

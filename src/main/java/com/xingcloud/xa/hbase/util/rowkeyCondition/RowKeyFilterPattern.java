@@ -35,7 +35,7 @@ public class  RowKeyFilterPattern implements RowKeyFilterCondition,Comparable<Ro
     }
 
     public RowKeyFilterPattern(String pattern,String tailSrt, String tailEnd){
-        this.pattern=Bytes.toBytesBinary(pattern);
+        this.pattern=Bytes.toBytesBinary(  pattern);
         this.tailSrt=Bytes.toBytesBinary(tailSrt);
         this.tailEnd=Bytes.toBytesBinary(tailEnd);
     }

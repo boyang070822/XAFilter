@@ -104,10 +104,16 @@ public class XARowKeyPatternFilter extends FilterBase {
 
     private boolean toNextCondition(byte[] rk){
        LOG.info("to next Condition");
+       boolean nextCondition=false;
        while(conditionIndex<conditions.size()){
            if(conditions.get(conditionIndex).rkCompareTo(rk)<=0)
                break;
            conditionIndex++;
+           nextCondition=true;
+       }
+       if(!nextCondition){
+           this.filterOutRow=true;
+           return this.filterOutRow;
        }
        LOG.info(" to condition "+conditionIndex);
        if(conditionIndex<conditions.size()&&conditions.get(conditionIndex).accept(rk))

@@ -114,10 +114,10 @@ public class XARowKeyPatternFilter extends FilterBase {
             if(condition.rkCompareTo(rk)<=0){
                 KeyValue newKV = new KeyValue(condition.getDestination(), kv.getFamily(), kv.getQualifier());
                 this.filterOutRow=false;
-                LOG.info("pattern "+Bytes.toString(condition.getStartRk()));
-                LOG.info("rk "+Bytes.toStringBinary(rk));
-                LOG.info("bigPattern ");
-                LOG.info("conditionIndex "+conditionIndex);
+                //LOG.info("pattern "+Bytes.toString(condition.getStartRk()));
+                //LOG.info("rk "+Bytes.toStringBinary(rk));
+                //LOG.info("bigPattern ");
+                //LOG.info("conditionIndex "+conditionIndex);
                 LOG.info(" skip to "+Bytes.toStringBinary(newKV.getRow()));
 
 

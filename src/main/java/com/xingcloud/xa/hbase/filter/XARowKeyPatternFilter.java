@@ -29,6 +29,7 @@ public class XARowKeyPatternFilter extends FilterBase {
     private int conditionIndex=0,conditionSize=0;
     private boolean filterOutRow = false;
     private RowKeyFilterCondition currentCondition;
+    private long skipT=0,filterT=0,filterKvT=0;
     private Comparator<RowKeyFilterCondition> conditionComparator=new Comparator<RowKeyFilterCondition>() {
         @Override
         public int compare(RowKeyFilterCondition o1, RowKeyFilterCondition o2) {
@@ -68,40 +69,52 @@ public class XARowKeyPatternFilter extends FilterBase {
     @Override
     public ReturnCode filterKeyValue(KeyValue kv) {
         //LOG.info("filterKeyValue");
+        long t1=System.currentTimeMillis(),t2;
         if (this.filterOutRow) {
            if(this.conditionIndex==this.conditions.size()){
               //LOG.info("filter KeyValue return NEXT_ROW");
+              t2=System.currentTimeMillis();
+              filterKvT+=(t2-t1);
               return ReturnCode.NEXT_ROW;
            }
+            t2=System.currentTimeMillis();
+            filterKvT+=(t2-t1);
            //LOG.info("filter KeyValue return SEEK_NEXT_USING_HINT");
            return ReturnCode.SEEK_NEXT_USING_HINT;
         }
+        t2=System.currentTimeMillis();
+        filterKvT+=(t2-t1);
         return ReturnCode.INCLUDE;
     }
 
     @Override
     public boolean filterRowKey(byte[] data, int offset, int length) {
+        long t1=System.currentTimeMillis(),t2;
         byte[] rk = Arrays.copyOfRange(data, offset, offset + length);
         //LOG.info("filter RowKey");
         if(!currentCondition.accept(rk)){
             //LOG.info("not accept by condition "+conditionIndex);
             this.filterOutRow=true;
+            t2=System.currentTimeMillis();
+            filterT+=(t2-t1);
             return this.filterOutRow;
         }else {
             //LOG.info("accept by condition "+conditionIndex+
             //        " :"+Bytes.toStringBinary(conditions.get(conditionIndex).getStartRk()));
             this.filterOutRow=false;
             //LOG.info("filter RowKey return false;");
+            t2=System.currentTimeMillis();
+            filterT+=(t2-t1);
             return this.filterOutRow;
         }
     }
 
     @Override
     public KeyValue getNextKeyHint(KeyValue kv) {
-        LOG.info("getNextKeyHint ");
+        //LOG.info("getNextKeyHint ");
+        long t1=System.currentTimeMillis(),t2;
         byte[] rk = kv.getRow();
         //resetIndex();
-
         while(conditionIndex<conditionSize){
             //LOG.info("conditionIndex "+conditionIndex);
             //currentCondition=this.conditions.get(conditionIndex);
@@ -113,6 +126,8 @@ public class XARowKeyPatternFilter extends FilterBase {
                 //LOG.info("bigPattern ");
                 //LOG.info("conditionIndex "+conditionIndex);
                 //LOG.info(" skip to "+Bytes.toStringBinary(newKV.getRow()));
+                t2=System.currentTimeMillis();
+                skipT+=(t2-t1);
                 return KeyValue.createFirstOnRow(newKV.getBuffer(), newKV.getRowOffset(), newKV
                         .getRowLength(), newKV.getBuffer(), newKV.getFamilyOffset(), newKV
                         .getFamilyLength(), null, 0, 0);
@@ -127,6 +142,7 @@ public class XARowKeyPatternFilter extends FilterBase {
 
         LOG.info("increase Result "+Bytes.toString(result));
         LOG.info("conditionIndex "+conditionIndex);
+        LOG.info("skip time is "+skipT+", filter Time is "+filterT+" , filterKv Time is "+filterKvT);
 
         return KeyValue.createFirstOnRow(newKV.getBuffer(), newKV.getRowOffset(), newKV
                     .getRowLength(), newKV.getBuffer(), newKV.getFamilyOffset(), newKV

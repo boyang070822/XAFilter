@@ -103,7 +103,7 @@ public class XARowKeyPatternFilter extends FilterBase {
         //resetIndex();
         while(conditionIndex<this.conditions.size()){
             //LOG.info("conditionIndex "+conditionIndex);
-            currentCondition=this.conditions.get(conditionIndex);
+            //currentCondition=this.conditions.get(conditionIndex);
             if(currentCondition.rkCompareTo(rk)<=0){
                 KeyValue newKV = new KeyValue(currentCondition.getDestination(), kv.getFamily(), kv.getQualifier());
                 this.filterOutRow=false;
@@ -117,6 +117,8 @@ public class XARowKeyPatternFilter extends FilterBase {
                         .getFamilyLength(), null, 0, 0);
             }
             conditionIndex++;
+            if(conditionIndex<conditions.size())
+                currentCondition=conditions.get(conditionIndex);
         }
         byte[] result=increaseFirstByte(currentCondition.getEndRk());
         KeyValue newKV=new KeyValue(result,kv.getFamily(),kv.getQualifier());

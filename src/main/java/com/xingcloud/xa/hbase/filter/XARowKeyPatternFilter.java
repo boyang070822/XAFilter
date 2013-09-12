@@ -29,7 +29,7 @@ public class XARowKeyPatternFilter extends FilterBase {
     private int conditionIndex=0,conditionSize=0;
     private boolean filterOutRow = false;
     private RowKeyFilterCondition currentCondition;
-    private long skipT=0,filterT=0,filterKvT=0;
+    private long skipT=0,filterT=0,filterKvT=0,sumT1,sumT2;
     private Comparator<RowKeyFilterCondition> conditionComparator=new Comparator<RowKeyFilterCondition>() {
         @Override
         public int compare(RowKeyFilterCondition o1, RowKeyFilterCondition o2) {
@@ -139,11 +139,11 @@ public class XARowKeyPatternFilter extends FilterBase {
         }
         byte[] result=increaseFirstByte(currentCondition.getEndRk());
         KeyValue newKV=new KeyValue(result,kv.getFamily(),kv.getQualifier());
-
+        sumT2=System.currentTimeMillis();
         LOG.info("increase Result "+Bytes.toString(result));
         LOG.info("conditionIndex "+conditionIndex);
         LOG.info("skip time is "+skipT+", filter Time is "+filterT+" , filterKv Time is "+filterKvT);
-
+        LOG.info("sum time is "+(sumT2-sumT1));
         return KeyValue.createFirstOnRow(newKV.getBuffer(), newKV.getRowOffset(), newKV
                     .getRowLength(), newKV.getBuffer(), newKV.getFamilyOffset(), newKV
                     .getFamilyLength(), null, 0, 0);
@@ -184,6 +184,7 @@ public class XARowKeyPatternFilter extends FilterBase {
         this.conditionIndex=0;
         this.currentCondition=this.conditions.get(0);
         conditionSize=conditions.size();
+        sumT1=System.currentTimeMillis();
     }
 
     @Override

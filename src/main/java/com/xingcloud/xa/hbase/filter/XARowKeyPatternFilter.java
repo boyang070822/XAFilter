@@ -120,7 +120,7 @@ public class XARowKeyPatternFilter extends FilterBase {
             conditionIndex++;
             if(conditionIndex<conditions.size())
                 currentCondition=conditions.get(conditionIndex);
-            rk=kv.getRow();
+            //rk=kv.getRow();
         }
         byte[] result=increaseFirstByte(currentCondition.getEndRk());
         KeyValue newKV=new KeyValue(result,kv.getFamily(),kv.getQualifier());

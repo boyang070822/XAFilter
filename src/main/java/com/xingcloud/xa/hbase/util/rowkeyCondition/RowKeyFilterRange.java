@@ -99,11 +99,9 @@ public class RowKeyFilterRange implements RowKeyFilterCondition, Comparable<RowK
     public int rkCompareTo(byte[] rk){
         if(Bytes.compareTo(rk, srk)>=0&&Bytes.compareTo(rk,enk)<0){
             int tailOffset=rk.length-tailLen;
-            //byte[] rkHead=Arrays.copyOf(rk,tailOffset);
-            rk[tailOffset-1]+=1;
-            for(int i=0;i<tailLen;i++)
-                rk[tailOffset+i]=tailSrt[i];
-            destination=rk;
+            byte[] rkHead=Arrays.copyOf(rk,tailOffset);
+            rkHead[tailOffset-1]+=1;
+            destination=Bytes.add(rkHead,tailSrt);
             return 0;
         }
         //logger.info("not accept "+Bytes.toStringBinary(rk)+"  "+Bytes.toStringBinary(srk)+"---"+Bytes.toStringBinary(enk));

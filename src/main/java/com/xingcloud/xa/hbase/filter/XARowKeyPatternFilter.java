@@ -26,7 +26,7 @@ public class XARowKeyPatternFilter extends FilterBase {
     private static Logger LOG = LoggerFactory.getLogger(XARowKeyFilter.class);
 
     private List<RowKeyFilterCondition> conditions=null;
-    private int conditionIndex=0;
+    private int conditionIndex=0,conditionSize=0;
     private boolean filterOutRow = false;
     private RowKeyFilterCondition currentCondition;
     private Comparator<RowKeyFilterCondition> conditionComparator=new Comparator<RowKeyFilterCondition>() {
@@ -101,7 +101,8 @@ public class XARowKeyPatternFilter extends FilterBase {
         LOG.info("getNextKeyHint ");
         byte[] rk = kv.getRow();
         //resetIndex();
-        while(conditionIndex<this.conditions.size()){
+
+        while(conditionIndex<conditionSize){
             //LOG.info("conditionIndex "+conditionIndex);
             //currentCondition=this.conditions.get(conditionIndex);
             if(currentCondition.rkCompareTo(rk)<=0){
@@ -119,6 +120,7 @@ public class XARowKeyPatternFilter extends FilterBase {
             conditionIndex++;
             if(conditionIndex<conditions.size())
                 currentCondition=conditions.get(conditionIndex);
+            rk=kv.getRow();
         }
         byte[] result=increaseFirstByte(currentCondition.getEndRk());
         KeyValue newKV=new KeyValue(result,kv.getFamily(),kv.getQualifier());
@@ -165,6 +167,7 @@ public class XARowKeyPatternFilter extends FilterBase {
         this.filterOutRow = false;
         this.conditionIndex=0;
         this.currentCondition=this.conditions.get(0);
+        conditionSize=conditions.size();
     }
 
     @Override

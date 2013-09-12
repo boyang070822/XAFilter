@@ -28,6 +28,7 @@ public class XARowKeyPatternFilter extends FilterBase {
     private List<RowKeyFilterCondition> conditions=null;
     private int conditionIndex=0;
     private boolean filterOutRow = false;
+    private RowKeyFilterCondition currentCondition;
     private Comparator<RowKeyFilterCondition> conditionComparator=new Comparator<RowKeyFilterCondition>() {
         @Override
         public int compare(RowKeyFilterCondition o1, RowKeyFilterCondition o2) {
@@ -68,13 +69,12 @@ public class XARowKeyPatternFilter extends FilterBase {
     public ReturnCode filterKeyValue(KeyValue kv) {
         //LOG.info("filterKeyValue");
         if (this.filterOutRow) {
-
-                if(this.conditionIndex==this.conditions.size()){
-                    //LOG.info("filter KeyValue return NEXT_ROW");
-                    return ReturnCode.NEXT_ROW;
-                }
-                //LOG.info("filter KeyValue return SEEK_NEXT_USING_HINT");
-                return ReturnCode.SEEK_NEXT_USING_HINT;
+           if(this.conditionIndex==this.conditions.size()){
+              //LOG.info("filter KeyValue return NEXT_ROW");
+              return ReturnCode.NEXT_ROW;
+           }
+           //LOG.info("filter KeyValue return SEEK_NEXT_USING_HINT");
+           return ReturnCode.SEEK_NEXT_USING_HINT;
         }
         return ReturnCode.INCLUDE;
     }
@@ -83,24 +83,17 @@ public class XARowKeyPatternFilter extends FilterBase {
     public boolean filterRowKey(byte[] data, int offset, int length) {
         byte[] rk = Arrays.copyOfRange(data, offset, offset + length);
         //LOG.info("filter RowKey");
-        if(conditions!=null&&conditionIndex<conditions.size()){
-            if(!conditions.get(conditionIndex).accept(rk)){
-                //LOG.info("not accept by condition "+conditionIndex);
-                this.filterOutRow=true;
-                return this.filterOutRow;
-
-            }else {
-                //LOG.info("accept by condition "+conditionIndex+
-                //        " :"+Bytes.toStringBinary(conditions.get(conditionIndex).getStartRk()));
-                this.filterOutRow=false;
-                //LOG.info("filter RowKey return false;");
-                return this.filterOutRow;
-            }
-        }else{
+        if(!currentCondition.accept(rk)){
+            //LOG.info("not accept by condition "+conditionIndex);
             this.filterOutRow=true;
             return this.filterOutRow;
+        }else {
+            //LOG.info("accept by condition "+conditionIndex+
+            //        " :"+Bytes.toStringBinary(conditions.get(conditionIndex).getStartRk()));
+            this.filterOutRow=false;
+            //LOG.info("filter RowKey return false;");
+            return this.filterOutRow;
         }
-        //return this.filterOutRow;
     }
 
     @Override
@@ -110,24 +103,22 @@ public class XARowKeyPatternFilter extends FilterBase {
         //resetIndex();
         while(conditionIndex<this.conditions.size()){
             //LOG.info("conditionIndex "+conditionIndex);
-            RowKeyFilterCondition condition=this.conditions.get(conditionIndex);
-            if(condition.rkCompareTo(rk)<=0){
-                KeyValue newKV = new KeyValue(condition.getDestination(), kv.getFamily(), kv.getQualifier());
+            currentCondition=this.conditions.get(conditionIndex);
+            if(currentCondition.rkCompareTo(rk)<=0){
+                KeyValue newKV = new KeyValue(currentCondition.getDestination(), kv.getFamily(), kv.getQualifier());
                 this.filterOutRow=false;
                 //LOG.info("pattern "+Bytes.toString(condition.getStartRk()));
                 //LOG.info("rk "+Bytes.toStringBinary(rk));
                 //LOG.info("bigPattern ");
                 //LOG.info("conditionIndex "+conditionIndex);
                 //LOG.info(" skip to "+Bytes.toStringBinary(newKV.getRow()));
-
-
                 return KeyValue.createFirstOnRow(newKV.getBuffer(), newKV.getRowOffset(), newKV
                         .getRowLength(), newKV.getBuffer(), newKV.getFamilyOffset(), newKV
                         .getFamilyLength(), null, 0, 0);
             }
             conditionIndex++;
         }
-        byte[] result=increaseFirstByte(this.conditions.get(conditionIndex-1).getEndRk());
+        byte[] result=increaseFirstByte(currentCondition.getEndRk());
         KeyValue newKV=new KeyValue(result,kv.getFamily(),kv.getQualifier());
 
         LOG.info("increase Result "+Bytes.toString(result));
@@ -171,6 +162,7 @@ public class XARowKeyPatternFilter extends FilterBase {
         this.conditions=conditions;
         this.filterOutRow = false;
         this.conditionIndex=0;
+        this.currentCondition=this.conditions.get(0);
     }
 
     @Override

@@ -31,6 +31,7 @@ public class RowKeyFilterRange implements RowKeyFilterCondition, Comparable<RowK
         this.enk= ByteUtils.toBytesBinary(enk);
         this.tailSrt=new byte[]{0};
         this.tailEnd=new byte[]{-1};
+        tailLen=tailSrt.length;
         this.destination=this.srk;
         this.sampling=false;
     }
@@ -42,6 +43,7 @@ public class RowKeyFilterRange implements RowKeyFilterCondition, Comparable<RowK
         assert (this.tailSrt.length==this.tailEnd.length);
         this.destination=this.srk;
         this.sampling=true;
+        tailLen=tailSrt.length;
     }
     public RowKeyFilterRange(){}
     public void readFields(DataInput in) throws IOException {

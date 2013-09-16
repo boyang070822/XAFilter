@@ -56,6 +56,7 @@ public class XARowKeyPatternFilter extends FilterBase {
         RowKeyFilterCondition[] sortCondition=this.conditions.toArray(new RowKeyFilterCondition[this.conditions.size()]);
         Arrays.sort(sortCondition,conditionComparator);
         this.conditions=Arrays.asList(sortCondition);
+        this.currentCondition=this.conditions.get(0);
     }
 
 

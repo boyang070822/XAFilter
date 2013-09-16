@@ -35,12 +35,56 @@ public class  RowKeyFilterPattern implements RowKeyFilterCondition,Comparable<Ro
         this.pattern= ByteUtils.toBytesBinary(pattern);
         this.tailSrt=new byte[]{0};
         this.tailEnd=new byte[]{-1};
+        int i=0;
+        while(i<tailSrt.length){
+            if(!(tailSrt[i]==(byte)0&&tailEnd[i]==(byte)-1)){
+                sampling=true;
+                break;
+            }
+            i++;
+        }
+        if(sampling){
+            if(Bytes.equals(Arrays.copyOfRange(this.pattern,this.pattern.length-2,this.pattern.length),new byte[]{'.',-1})){
+                srk=Bytes.add(this.pattern,tailSrt);
+                enk=Bytes.add(this.pattern,tailEnd);
+            }else{
+                srk=Bytes.add(this.pattern,new byte[]{'.',-1},tailSrt);
+                enk=Bytes.add(this.pattern,new byte[]{'.',-1},tailEnd);
+            }
+            logger.info("srk "+Bytes.toStringBinary(srk));
+            logger.info("enk "+Bytes.toStringBinary(enk));
+            destination=srk;
+        }else {
+            destination=this.pattern;
+        }
     }
 
     public RowKeyFilterPattern(String pattern,String tailSrt, String tailEnd)  {
         this.pattern=Bytes.toBytesBinary(pattern);
         this.tailSrt=Bytes.toBytesBinary(tailSrt);
         this.tailEnd=Bytes.toBytesBinary(tailEnd);
+        int i=0;
+        while(i<this.tailSrt.length){
+            if(!(this.tailSrt[i]==(byte)0&&this.tailEnd[i]==(byte)-1)){
+                sampling=true;
+                break;
+            }
+            i++;
+        }
+        if(sampling){
+            if(Bytes.equals(Arrays.copyOfRange(this.pattern,this.pattern.length-2,this.pattern.length),new byte[]{'.',-1})){
+                srk=Bytes.add(this.pattern,this.tailSrt);
+                enk=Bytes.add(this.pattern,this.tailEnd);
+            }else{
+                srk=Bytes.add(this.pattern,new byte[]{'.',-1},this.tailSrt);
+                enk=Bytes.add(this.pattern,new byte[]{'.',-1},this.tailEnd);
+            }
+            logger.info("srk "+Bytes.toStringBinary(srk));
+            logger.info("enk "+Bytes.toStringBinary(enk));
+            destination=srk;
+        }else {
+            destination=this.pattern;
+        }
         assert (this.tailSrt.length!=this.tailEnd.length);
     }
 
